@@ -3,12 +3,18 @@ import { RootState } from "@/app/store";
 
 export interface AuthState {
   name: string | null;
-  token: string | null;
+  role: string | null;
+  userId: string | null;
+  age: string | null;
+  designation: string[];
 }
 
 const initialState = {
   name: "",
-  token: "",
+  role: "",
+  userId: "",
+  age: "",
+  designation: [""],
 };
 
 export const authSlice = createSlice({
@@ -17,22 +23,27 @@ export const authSlice = createSlice({
   reducers: {
     setUser: (
       state,
-      action: PayloadAction<{ name: string; token: string }>
+      action: PayloadAction<{
+        name: string;
+        role: string;
+        userId: string;
+        age: string;
+        designation: string[];
+      }>
     ) => {
-      localStorage.setItem(
-        "authToken",
-        JSON.stringify({
-          name: action.payload.name,
-          token: action.payload.token,
-        })
-      );
       state.name = action.payload.name;
-      state.token = action.payload.token;
+      state.role = action.payload.role;
+      state.userId = action.payload.userId;
+      state.age = action.payload.age;
+      state.designation = action.payload.designation;
     },
     logOutUser: (state) => {
       localStorage.clear();
       state.name = "";
-      state.token = "";
+      state.role = "";
+      state.userId = "";
+      state.age = "";
+      state.designation = [""];
     },
   },
 });

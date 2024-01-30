@@ -12,6 +12,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { useRegisterUserMutation } from "@/service/authApi";
+import { useEffect } from "react";
+import { useToast } from "./ui/use-toast";
+import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "@/app/hooks";
+import { setUser } from "@/features/authSlice";
 
 export const RegisterSchema = z.object({
   firstName: z.string().min(1, {
@@ -45,9 +51,40 @@ const RegisterForm = ({
       confirmPassword: "",
     },
   });
-  const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
+  const [registerUser, { data, isError, isLoading, isSuccess }] =
+    useRegisterUserMutation();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const onSubmit = async (values: z.infer<typeof RegisterSchema>) => {
     console.log(values);
+    await registerUser(values);
   };
+  useEffect(() => {
+    if (isLoading) {
+      toast({
+        title: "Logging In",
+        description: "Wait a moment for verification",
+        className: "bg-yellow-300",
+      });
+    }
+    if (isError) {
+      toast({
+        title: "Something Went Wrong",
+        description: "Retry for verification",
+        className: "bg-red-300",
+      });
+    }
+    if (isSuccess) {
+      dispatch(setUser({ name: data.name, token: data.token }));
+      toast({
+        title: "Logged In",
+        description: "Redirect to Dashboard",
+        className: "bg-green-300",
+      });
+      navigate("/dashboard");
+    }
+  }, [isError, isLoading, isSuccess]);
   return (
     <CardWrapper
       handleFormChange={handleFormChange}

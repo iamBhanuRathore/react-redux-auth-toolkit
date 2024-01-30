@@ -17,6 +17,8 @@ import { Button } from "./ui/button";
 import { useEffect } from "react";
 import { useToast } from "./ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "@/app/hooks";
+import { setUser } from "@/features/authSlice";
 export const LoginSchema = z.object({
   email: z.string().email({
     message: "Email is required",
@@ -30,6 +32,7 @@ const LoginForm = ({ handleFormChange }: { handleFormChange: () => void }) => {
     useLoginUserMutation();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
@@ -41,7 +44,6 @@ const LoginForm = ({ handleFormChange }: { handleFormChange: () => void }) => {
   const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
     await loginUser(values);
   };
-  console.log(data);
   useEffect(() => {
     if (isLoading) {
       toast({
@@ -58,12 +60,13 @@ const LoginForm = ({ handleFormChange }: { handleFormChange: () => void }) => {
       });
     }
     if (isSuccess) {
-      navigate("/dashboard");
+      dispatch(setUser({ name: data.name, token: data.token }));
       toast({
         title: "Logged In",
         description: "Redirect to Dashboard",
         className: "bg-green-300",
       });
+      navigate("/dashboard");
     }
   }, [isError, isLoading, isSuccess]);
   return (
