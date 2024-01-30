@@ -36,12 +36,12 @@ export const authApis = createApi({
     }),
     // for verifing a user if its already logged in and getiing the necessary details
     verifyUser: builder.mutation({
-      query: (body: z.infer<typeof RegisterSchema>) => {
+      query: (token: string) => {
         return {
-          url: "/login",
+          url: "/verify-token",
           method: "GET",
           headers: {
-            data: JSON.stringify(body),
+            Authorization: token,
           },
         };
       },
