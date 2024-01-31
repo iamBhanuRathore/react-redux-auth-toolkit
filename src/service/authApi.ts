@@ -9,42 +9,41 @@ export const authApis = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: "http://localhost:4000",
   }),
+  tagTypes: ["verify"],
   endpoints: (builder) => ({
-    // for letting hte user log in
+    // for letting the user log in
     loginUser: builder.mutation({
       query: (body: z.infer<typeof LoginSchema>) => {
         return {
           url: "/login",
-          method: "GET",
-          headers: {
-            data: JSON.stringify(body),
-          },
+          method: "POST",
+          body,
         };
       },
+      invalidatesTags: ["verify"],
     }),
     // for registering a new user
     registerUser: builder.mutation({
       query: (body: z.infer<typeof RegisterSchema>) => {
         return {
           url: "/login",
-          method: "GET",
-          headers: {
-            data: JSON.stringify(body),
-          },
+          method: "POST",
+          body,
         };
       },
     }),
-    // for verifing a user if its already logged in and getiing the necessary details
-    verifyUser: builder.mutation({
+    // for verifing a user if its already logged in and POSTiing the necessary details
+    verifyUser: builder.query({
       query: (token: string) => {
         return {
-          url: "/verify-token",
-          method: "GET",
+          url: "/verify",
+          method: "POST",
           headers: {
-            Authorization: token,
+            token,
           },
         };
       },
+      providesTags: ["verify"],
     }),
   }),
 });
@@ -52,5 +51,5 @@ export const authApis = createApi({
 export const {
   useLoginUserMutation,
   useRegisterUserMutation,
-  useVerifyUserMutation,
+  useVerifyUserQuery,
 } = authApis;
