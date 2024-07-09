@@ -1,8 +1,8 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { logOutUser } from "@/features/authSlice";
-import { clearUserDetails } from "@/features/userDetailsSlice";
+import { clearUserDetails, setUserDetails } from "@/features/userDetailsSlice";
 import { useVerifyUserQuery } from "@/service/authApi";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 type Props = {
@@ -13,13 +13,17 @@ type Props = {
 const ProtectedRoute = ({ children, shouldProtect = true }: Props) => {
   const { token } = useAppSelector((state) => state.auth);
   // const userDetails = useAppSelector((state) => state.userDetails);
-  const [goodRender, setGoodRender] = useState(false);
+  // const [goodRender, setGoodRender] = useState(false);
+  const isFirstRender = useRef(true);
+
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { refetch, data, isError, isLoading, isUninitialized, isSuccess } =
     useVerifyUserQuery(token);
   useEffect(() => {
-    setGoodRender(true);
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+    }
     if (token) {
       (async () => {
         refetch();
@@ -27,7 +31,7 @@ const ProtectedRoute = ({ children, shouldProtect = true }: Props) => {
     }
   }, [token]);
 
-  if (!goodRender) return children;
+  if (isFirstRender.current) return children;
   if (!token) {
     // if the token is not found after updaing the redux state
     if (shouldProtect) {
@@ -45,16 +49,18 @@ const ProtectedRoute = ({ children, shouldProtect = true }: Props) => {
   if (isError) {
     dispatch(logOutUser(), clearUserDetails());
     navigate("/auth");
-    return null;
+    return children;
   }
 
   // if authentication is completed and the user is authenticated
   if (isSuccess && data.name) {
+    console.log(data);
+    dispatch(setUserDetails({ ...data }));
     if (shouldProtect) {
       return children;
     }
     navigate("/dashboard");
-    // return children;
+    return children;
   }
   return children;
 };
